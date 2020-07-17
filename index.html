@@ -10,6 +10,7 @@
 		body{
 			font-family: 'Press Start 2P', 'Noto Sans TC', sans-serif;
 		}
+    .form-check-input:checked + .form-check-label{text-decoration: line-through;}
 	</style>
 </head>
 <body>
@@ -45,7 +46,99 @@
 	</div>
 
 	<script>
+const todoInput = document.querySelector("#newTodo");
+const addBtn = document.querySelector("#addTodo");
+const todoListWrap = document.querySelector("#todoList");
+const clearBtn = document.querySelector("#clearTask");
+const countTodo = document.querySelector("#taskCount");
 
+todoInput.addEventListener("keyup", keyupHandler);
+addBtn.addEventListener("click", addTodoHandler);
+clearBtn.addEventListener("click", clearTodoHandler);
+todoListWrap.addEventListener("click", todoListHandler);
+
+let toDoData = [
+  {
+    id: Math.floor(Date.now()),
+    title: "default list",
+    completed: false,
+  }
+];
+renderTodoView();
+
+// Enter 按鍵
+function keyupHandler(e){
+  // 若是按下 enter 則 新增待辦事項，否則不做事
+  (e.keyCode == 13)? addTodoHandler(): "";
+};
+// 新增代辦事項
+function addTodoHandler(e){
+  let newTodo = todoInput.value;
+  // 輸入欄位是否為空，為空則不做事
+  if(newTodo == ''){
+    return false;
+  }
+  // 於陣列中新增一筆資料
+  toDoData.push({
+    id: Math.floor(Date.now()),
+    title: newTodo,
+    completed: false,
+  });
+  // 重新渲染畫面
+  renderTodoView();
+  // 清空入框
+  todoInput.value = "";
+};
+//清除所有任務
+function clearTodoHandler(){
+  toDoData = [];
+  renderTodoView();
+};
+// 代辦事項事件處理
+function todoListHandler(e){
+  // 按到remove按鈕
+  (e.target.classList.value.includes("remove"))? removeTodoList(e.target.dataset.id): "";
+  // 按到完成check box
+  (e.target.classList.value.includes("form-check-input"))? changeTodoListStatus(e.target): "";
+  renderTodoView();
+};
+// 變更代辦事項狀態
+function changeTodoListStatus(ele){
+  let _id = ele.dataset.id;
+  toDoData.forEach(item => {
+    (item.id == _id)? item.completed = !item.completed: "";
+  });
+};
+// 刪除代辦事項
+function removeTodoList(id){
+  toDoData.forEach( (item, index) =>{
+    (item.id == id)? toDoData.splice(index, 1): "";
+  });
+  renderTodoView();
+};
+//畫面重新渲染
+function renderTodoView(){
+  let _html = '';
+  toDoData.forEach( item => {
+    _html += `
+<li class="list-group-item" id="${item.id}">
+    <div class="d-flex justify-content-between">
+      <div class="form-check" data-action="complete">
+        <input type="checkbox" data-id="${item.id}" class="form-check-input ${item.completed ? 'checked' : ''}" ${item.completed ? 'checked' : ''}>
+        <label class="form-check-label ${item.completed ? 'completed' : ''}"> ${item.title}</label>
+      </div>
+      <button type="button" class="d-block close remove" data-id="${item.id}">x</button>
+    </div>
+</li>
+    `;
+  });
+  todoListWrap.innerHTML = _html;
+  countTodoHandler();
+};
+// 計算代辦事項
+function countTodoHandler(){
+  countTodo.textContent = toDoData.length;
+};
 	</script>
 </body>
 </html>
